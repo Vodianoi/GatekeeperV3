@@ -587,7 +587,7 @@ class AMP_Server(commands.Cog):
 
     @amp_server_init_settings.command(name='channels')
     @app_commands.autocomplete(server=utils.autocomplete_servers)
-    @app_commands.autocomplete(channels=autocomplete_channel_labels)
+    @app_commands.autocomplete(channel_list=autocomplete_channel_labels)
     async def server_channel_init(self, context: commands.Context, server, channels: list[str] = ["console", "chat", "events"]):
         """Creates a category and channels for the AMP server (console, events, chat) and links them."""
         self.logger.command(f'{context.author.name} used Server Channel Init...')
