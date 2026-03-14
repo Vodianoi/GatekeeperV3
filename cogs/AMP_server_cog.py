@@ -588,6 +588,8 @@ class AMP_Server(commands.Cog):
     @amp_server_init_settings.command(name='channels')
     @app_commands.autocomplete(
         server=utils.autocomplete_servers,
+    )
+    @app_commands.autocomplete(
         channels=autocomplete_channel_labels
     )
     async def server_channel_init(self, context: commands.Context, server, channels: list[str] = ["console", "chat", "events"]):
