@@ -1152,6 +1152,13 @@ class DBServer:
         jdata = dump_to_json({"Type": "UpdateServerDisplayName", "ServerID": self.ID, "DisplayName": DisplayName})
         self._db._logdata(jdata)
 
+    def getDisplayName(self):
+        (row, cur) = self._db._fetchone("Select DisplayName from Servers where ID=?", (self.ID,))
+        if not row:
+            return None
+        cur.close()
+        return row["DisplayName"]
+
     def getBanner(self, background_path: str = None):
         return DBBanner(self._db, self.ID, background_path)
 
