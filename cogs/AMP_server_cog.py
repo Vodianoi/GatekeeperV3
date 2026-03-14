@@ -606,7 +606,7 @@ class AMP_Server(commands.Cog):
             self.logger.info(f"Created category: {category_name}")
 
         created_channels = {}
-        for key, name in channel.items():
+        for key, name in channel_list.items():
             channel = discord.utils.get(category.channels, name=name)
             if not channel:
                 channel = await guild.create_text_channel(name, category=category)
