@@ -4,6 +4,10 @@
         {
             "name": "develop",
             "prerelease": "rc"
+        },
+        {
+            "name": "features/*",
+            "prerelease": "dev"
         }
 
     ],
