@@ -605,10 +605,11 @@ class AMP_Server(commands.Cog):
 
         # Link channels to AMP server in DB
         db_server = self.DB.GetServer(InstanceID=amp_server.InstanceID)
-        db_server.Console_Channel = created_channels["console"].id
-        db_server.Discord_Chat_Channel = created_channels["chat"].id
-        db_server.Discord_Event_Channel = created_channels["events"].id
+        await self.amp_server_event_channel_set(context, server, created_channels["events"])
+        await self.amp_server_console_channel(context, server, created_channels["console"])
+        await self.amp_server_chat_channel(context, server, created_channels["chat"])
         amp_server._setDBattr()
+
 
         await context.send(
             f"Initialized channels for **{amp_server.InstanceName}**:\n"
