@@ -1,15 +1,13 @@
-#Discord Server Connection Bot Token (Under Bot request token)
-token = 'IGNORE THIS FIELD IF TESTING AMP/DB'
+import os
 
-#2Factor AUTH Code for AMP Console Login
-#Leave blank if you are not using 2FA.
-AMPAuth = ''
+# Discord Server Connection Bot Token (Under Bot request token)
+token = os.getenv('DISCORD_BOT_TOKEN', 'IGNORE THIS FIELD IF TESTING AMP/DB')
 
-#Login creds - ## DO NOT SHARE! ##
-#AMPUser is the Login Name for the account you want the bot to use.
-#AMPPassword is the password for said Login.
-#AMPurl is the local URL to your web gui (eg. http://192.168.3.500:8080)
-AMPUser = ''
-AMPPassword = ''
-AMPurl = ''
+# 2Factor AUTH Code for AMP Console Login
+AMPAuth = os.getenv('AMP_AUTH', '')
+
+# Login creds - ## DO NOT SHARE! ##
+AMPUser = os.getenv('AMP_USER', '')
+AMPPassword = os.getenv('AMP_PASSWORD', '')
+AMPurl = os.getenv('AMP_URL', '')
 
