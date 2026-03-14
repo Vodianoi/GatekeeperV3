@@ -3,7 +3,7 @@ name: Docker build and push
 on:
   push:
     tags:
-      - '*.*.*'
+      - '*.*.*-rc.*' # Trigger on version tags like v1.0.0-rc.1
 jobs:
   docker:
     runs-on: ubuntu-latest
@@ -30,4 +30,4 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: vodianoi/gatekeeper:${{ github.ref_name }},vodianoi/gatekeeper:latest
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/gatekeeper:${{ github.ref_name }}
