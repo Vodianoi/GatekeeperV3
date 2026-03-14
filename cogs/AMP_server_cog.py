@@ -577,7 +577,7 @@ class AMP_Server(commands.Cog):
         if context.invoked_subcommand is None:
             await context.send('Invalid command passed...', ephemeral=True, delete_after=self._client.Message_Timeout)
 
-    def autocomplete_channel_labels(interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+    async def autocomplete_channel_labels(interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
         labels = ["console", "chat", "events"]
         return [
             app_commands.Choice(name=label, value=label)
@@ -586,12 +586,8 @@ class AMP_Server(commands.Cog):
         ]
 
     @amp_server_init_settings.command(name='channels')
-    @app_commands.autocomplete(
-        server=utils.autocomplete_servers,
-    )
-    @app_commands.autocomplete(
-        channels=autocomplete_channel_labels
-    )
+    @app_commands.autocomplete(server=utils.autocomplete_servers)
+    @app_commands.autocomplete(channels=autocomplete_channel_labels)
     async def server_channel_init(self, context: commands.Context, server, channels: list[str] = ["console", "chat", "events"]):
         """Creates a category and channels for the AMP server (console, events, chat) and links them."""
         self.logger.command(f'{context.author.name} used Server Channel Init...')
