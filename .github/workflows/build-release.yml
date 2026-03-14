@@ -3,7 +3,7 @@ name: Docker build and push
 on:
   push:
     tags:
-      - '*.*.*' # Trigger on version tags like v1.0.0
+      - '^*.*.*$' # Trigger on version tags like v1.0.0
 jobs:
   docker:
     runs-on: ubuntu-latest
