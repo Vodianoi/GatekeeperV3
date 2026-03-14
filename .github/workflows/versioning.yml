@@ -7,7 +7,14 @@ jobs:
     versioning:
         runs-on: ubuntu-latest
         steps:
-            - uses: paulhatch/semantic-version@v5.4.0
+            - name: Checkout
+              uses: actions/checkout@v2
+              with:
+                fetch-depth: 0    # fetch all history
+                filter: blob:none # exclude file contents for faster checkout
+            - name: Generate version
+              id: version
+              uses: paulhatch/semantic-version@v5.4.0
               with:
                 # The prefix to use to identify tags
                 tag_prefix: ""
