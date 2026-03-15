@@ -379,14 +379,17 @@ class AMP_Server(commands.Cog):
 
             # Check if the role is already in the server category permissions and if so update the permissions to match the new role.
             category = discord.utils.get(context.guild.categories, id=db_server.getDisplayName)
+            self.logger.info(f"Attempting to set permissions for role: {role.name} on category: {category.name if category else 'None'}")
             if category != None:
                 try:
                     await category.set_permissions(role, read_messages=True, send_messages=True, connect=True, speak=True)
                     # Remove permissions for the old role if it exists and is different from the new role.
                     if old_role_id and old_role_id != role.id:
                         old_role = context.guild.get_role(old_role_id)
+                        self.logger.info(f"Attempting to remove permissions for old role: {old_role.name if old_role else 'None'} on category: {category.name if category else 'None'}")
                         if old_role:
                             await category.set_permissions(old_role, read_messages=False, send_messages=False, connect=False, speak=False)
+                            self.logger.info(f"Removed permissions for old role: {old_role.name} on category: {category.name}")
                 except Exception as e:
                     self.logger.error(f'Failed to update Discord Category permissions for {amp_server.InstanceName} to match Discord Role change. Error: {e}')
 
