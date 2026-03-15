@@ -600,7 +600,8 @@ class AMP_Server(commands.Cog):
     @app_commands.choices(console=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(event=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(chat=[Choice(name="True", value=1), Choice(name="False", value=0)])
-    async def server_channel_init(self, context: commands.Context, server, console: Choice[int], event: Choice[int], chat: Choice[int]):
+    @app_commands.choices(private=[Choice(name="True", value=1), Choice(name="False", value=0)])
+    async def server_channel_init(self, context: commands.Context, server, console: Choice[int], event: Choice[int], chat: Choice[int], private: Choice[int]):
         """Creates a category and channels for the AMP server (console, event, chat) and links them."""
         self.logger.command(f'{context.author.name} used Server Channel Init...')
         await context.defer(ephemeral=True)
@@ -617,12 +618,15 @@ class AMP_Server(commands.Cog):
             category = await guild.create_category(category_name)
             self.logger.info(f"Created category: {category_name}")
 
-            # If db_server has role linked, set channel permissions for that role
+            # If db_server has role linked, set channel permissions for that role and make it so only that role can view the category and channels within it.
             if db_server.Discord_Role:
                 role = guild.get_role(db_server.Discord_Role)
                 if role:
                     await category.set_permissions(role, view_channel=True, send_messages=True, read_message_history=True)
+                    if private.value == 1:
+                        await category.set_permissions(guild.default_role, view_channel=False)
                     self.logger.info(f"Set permissions for role: {role.name} on category: {category_name}")
+                    
 
         created_channels = {}
         channels = {
