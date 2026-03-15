@@ -608,8 +608,9 @@ class AMP_Server(commands.Cog):
     @app_commands.choices(console=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(event=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(chat=[Choice(name="True", value=1), Choice(name="False", value=0)])
+    @app_commands.choices(voice=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(private=[Choice(name="True", value=1), Choice(name="False", value=0)])
-    async def server_channel_init(self, context: commands.Context, server, console: Choice[int], event: Choice[int], chat: Choice[int], private: Choice[int]):
+    async def server_channel_init(self, context: commands.Context, server, console: Choice[int], event: Choice[int], chat: Choice[int], private: Choice[int], voice: Choice[int]):
         """Creates a category and channels for the AMP server (console, event, chat) and links them."""
         self.logger.command(f'{context.author.name} used Server Channel Init...')
         await context.defer(ephemeral=True)
@@ -651,7 +652,8 @@ class AMP_Server(commands.Cog):
         channels = {
             "console": f"console" if console.value == 1 else None,
             "event": f"event" if event.value == 1 else None,
-            "chat": f"chat" if chat.value == 1 else None
+            "chat": f"chat" if chat.value == 1 else None,
+            "voice": f"voice" if voice.value == 1 else None
         }
         for key, name in channels.items():
             if not name:
@@ -666,6 +668,18 @@ class AMP_Server(commands.Cog):
         await self.amp_server_event_channel_set(context, server, created_channels["event"])
         await self.amp_server_console_channel(context, server, created_channels["console"])
         await self.amp_server_chat_channel(context, server, created_channels["chat"])
+        if created_channels.get("voice"):
+            voice_channel = created_channels["voice"]
+            # If a text channel was created for "voice", replace it with a real voice channel
+            if isinstance(voice_channel, discord.TextChannel):
+                try:
+                    await voice_channel.delete()
+                except Exception:
+                    pass
+            voice_channel = await guild.create_voice_channel("voice", category=category)
+            created_channels["voice"] = voice_channel
+
+            self.DB.GetServer(InstanceID=amp_server.InstanceID).Discord_Voice_Channel = voice_channel.id
         amp_server._setDBattr()
 
 
@@ -673,7 +687,8 @@ class AMP_Server(commands.Cog):
             f"Initialized channels for **{amp_server.InstanceName}**:\n"
             f"- Console: <#{created_channels['console'].id}>\n"
             f"- Chat: <#{created_channels['chat'].id}>\n"
-            f"- Event: <#{created_channels['event'].id}>",
+            f"- Event: <#{created_channels['event'].id}>\n"
+            f"- Voice: <#{created_channels['voice'].id}>",
             ephemeral=True, delete_after=self._client.Message_Timeout
         )
 
@@ -683,7 +698,8 @@ class AMP_Server(commands.Cog):
     @app_commands.choices(console=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(event=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(chat=[Choice(name="True", value=1), Choice(name="False", value=0)])
-    async def server_channel_clear(self, context: commands.Context, server, console: Choice[int], event: Choice[int], chat: Choice[int]):
+    @app_commands.choices(voice=[Choice(name="True", value=1), Choice(name="False", value=0)])
+    async def server_channel_clear(self, context: commands.Context, server, console: Choice[int], event: Choice[int], chat: Choice[int], voice: Choice[int]):
         """Unlinks and Deletes the category and channels for the AMP server (console, event, chat)"""
         self.logger.command(f'{context.author.name} used Server Channel Clear...')
         await context.defer(ephemeral=True)
@@ -702,7 +718,8 @@ class AMP_Server(commands.Cog):
         channels = {
             "console": console.value == 1,
             "event": event.value == 1,
-            "chat": chat.value == 1
+            "chat": chat.value == 1,
+            "voice": voice.value == 1
         }
         for key, should_delete in channels.items():
             if not should_delete:
@@ -711,7 +728,8 @@ class AMP_Server(commands.Cog):
             if channel:
                 await channel.delete()
                 self.logger.info(f"Deleted channel: {channel.name}")
-                setattr(db_server, f"Discord_{key.capitalize()}_Channel", None)
+                if key != "voice":  # Voice channel IDs aren't in db.
+                    setattr(db_server, f"Discord_{key.capitalize()}_Channel", None)
 
         # If category is empty after deletions, delete it as well
         if len(category.channels) == 0:
