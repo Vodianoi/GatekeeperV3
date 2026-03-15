@@ -685,14 +685,26 @@ class AMP_Server(commands.Cog):
         amp_server._setDBattr()
 
 
-        await context.send(
-            f"Initialized channels for **{amp_server.InstanceName}**:\n"
-            f"- Console: <#{created_channels['console'].id}>\n"
-            f"- Chat: <#{created_channels['chat'].id}>\n"
-            f"- Event: <#{created_channels['event'].id}>\n"
-            f"- Voice: <#{created_channels['voice'].id}>",
+        message_parts = []
+        if "console" in created_channels:
+            message_parts.append(f"- Console: <#{created_channels['console'].id}>")
+        if "chat" in created_channels:
+            message_parts.append(f"- Chat: <#{created_channels['chat'].id}>")
+        if "event" in created_channels:
+            message_parts.append(f"- Event: <#{created_channels['event'].id}>")
+        if "voice" in created_channels:
+            message_parts.append(f"- Voice: <#{created_channels['voice'].id}>")
+
+        if message_parts:
+            await context.send(
+            f"Initialized channels for **{amp_server.InstanceName}**:\n" + "\n".join(message_parts),
             ephemeral=True, delete_after=self._client.Message_Timeout
-        )
+            )
+        else:
+            await context.send(
+            f"No channels were initialized for **{amp_server.InstanceName}**.",
+            ephemeral=True, delete_after=self._client.Message_Timeout
+            )
 
 
     @amp_server_channels_settings.command(name='remove')
