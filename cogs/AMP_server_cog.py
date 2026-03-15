@@ -386,7 +386,7 @@ class AMP_Server(commands.Cog):
                     if old_role_id and old_role_id != role.id:
                         old_role = context.guild.get_role(old_role_id)
                         if old_role:
-                            await category.set_permissions(old_role, overwrite=None)
+                            await category.set_permissions(old_role, read_messages=False, send_messages=False, connect=False, speak=False)
                 except Exception as e:
                     self.logger.error(f'Failed to update Discord Category permissions for {amp_server.InstanceName} to match Discord Role change. Error: {e}')
 
