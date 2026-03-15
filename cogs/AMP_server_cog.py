@@ -582,7 +582,7 @@ class AMP_Server(commands.Cog):
     @app_commands.choices(console=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(events=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(chat=[Choice(name="True", value=1), Choice(name="False", value=0)])
-    async def server_channel_init(self, context: commands.Context, server, console: int, events: int, chat: int):
+    async def server_channel_init(self, context: commands.Context, server, console: Choice[int], events: Choice[int], chat: Choice[int]):
         """Creates a category and channels for the AMP server (console, events, chat) and links them."""
         self.logger.command(f'{context.author.name} used Server Channel Init...')
         await context.defer(ephemeral=True)
