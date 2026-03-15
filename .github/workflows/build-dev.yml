@@ -2,8 +2,9 @@ name: Docker build and push
 
 on:
   push:
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+-dev.[0-9]+'
+    branches:
+      - 'features/*'
+
 jobs:
   docker:
     runs-on: ubuntu-latest
@@ -30,4 +31,4 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          tags: ${{ vars.DOCKERHUB_USERNAME }}/gatekeeper:${{ github.ref_name }}, ${{ vars.DOCKERHUB_USERNAME }}/gatekeeper:latest-dev
+          tags: ${{ vars.DOCKERHUB_USERNAME }}/gatekeeper:latest-dev
