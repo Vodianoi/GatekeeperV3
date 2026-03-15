@@ -601,7 +601,7 @@ class AMP_Server(commands.Cog):
     @app_commands.choices(event=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(chat=[Choice(name="True", value=1), Choice(name="False", value=0)])
     async def server_channel_init(self, context: commands.Context, server, console: Choice[int], event: Choice[int], chat: Choice[int]):
-        """Creates a category and channels for the AMP server (console, events, chat) and links them."""
+        """Creates a category and channels for the AMP server (console, event, chat) and links them."""
         self.logger.command(f'{context.author.name} used Server Channel Init...')
         await context.defer(ephemeral=True)
 
@@ -627,7 +627,7 @@ class AMP_Server(commands.Cog):
         created_channels = {}
         channels = {
             "console": f"console" if console.value == 1 else None,
-            "event": f"events" if event.value == 1 else None,
+            "event": f"event" if event.value == 1 else None,
             "chat": f"chat" if chat.value == 1 else None
         }
         for key, name in channels.items():
@@ -640,7 +640,7 @@ class AMP_Server(commands.Cog):
             created_channels[key] = channel
 
         # Link channels to AMP server in DB
-        await self.amp_server_event_channel_set(context, server, created_channels["events"])
+        await self.amp_server_event_channel_set(context, server, created_channels["event"])
         await self.amp_server_console_channel(context, server, created_channels["console"])
         await self.amp_server_chat_channel(context, server, created_channels["chat"])
         amp_server._setDBattr()
@@ -650,7 +650,7 @@ class AMP_Server(commands.Cog):
             f"Initialized channels for **{amp_server.InstanceName}**:\n"
             f"- Console: <#{created_channels['console'].id}>\n"
             f"- Chat: <#{created_channels['chat'].id}>\n"
-            f"- Event: <#{created_channels['events'].id}>",
+            f"- Event: <#{created_channels['event'].id}>",
             ephemeral=True, delete_after=self._client.Message_Timeout
         )
 
@@ -661,7 +661,7 @@ class AMP_Server(commands.Cog):
     @app_commands.choices(event=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(chat=[Choice(name="True", value=1), Choice(name="False", value=0)])
     async def server_channel_clear(self, context: commands.Context, server, console: Choice[int], event: Choice[int], chat: Choice[int]):
-        """Unlinks and Deletes the category and channels for the AMP server (console, events, chat)"""
+        """Unlinks and Deletes the category and channels for the AMP server (console, event, chat)"""
         self.logger.command(f'{context.author.name} used Server Channel Clear...')
         await context.defer(ephemeral=True)
 
