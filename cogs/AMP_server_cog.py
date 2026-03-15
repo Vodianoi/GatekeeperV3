@@ -571,13 +571,13 @@ class AMP_Server(commands.Cog):
 
         await context.send(embeds=embed_list, ephemeral=True, delete_after=self._client.Message_Timeout)
 
-    @server.group(name='init')
+    @server.group(name='channels')
     @utils.role_check()
-    async def amp_server_init_settings(self, context: commands.Context):
+    async def amp_server_channels_settings(self, context: commands.Context):
         if context.invoked_subcommand is None:
             await context.send('Invalid command passed...', ephemeral=True, delete_after=self._client.Message_Timeout)
 
-    @amp_server_init_settings.command(name='channels')
+    @amp_server_channels_settings.command(name='init')
     @app_commands.autocomplete(server=utils.autocomplete_servers)
     @app_commands.choices(console=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(events=[Choice(name="True", value=1), Choice(name="False", value=0)])
