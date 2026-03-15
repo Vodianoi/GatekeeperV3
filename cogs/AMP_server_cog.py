@@ -629,5 +629,52 @@ class AMP_Server(commands.Cog):
             ephemeral=True, delete_after=self._client.Message_Timeout
         )
 
+
+
+    @amp_server_channels_settings.command(name='remove')
+    @app_commands.autocomplete(server=utils.autocomplete_servers)
+    @app_commands.choices(console=[Choice(name="True", value=1), Choice(name="False", value=0)])
+    @app_commands.choices(events=[Choice(name="True", value=1), Choice(name="False", value=0)])
+    @app_commands.choices(chat=[Choice(name="True", value=1), Choice(name="False", value=0)])
+    async def server_channel_clear(self, context: commands.Context, server, console: Choice[int], events: Choice[int], chat: Choice[int]):
+        """Unlinks and Deletes the category and channels for the AMP server (console, events, chat)"""
+        self.logger.command(f'{context.author.name} used Server Channel Clear...')
+        await context.defer(ephemeral=True)
+
+        amp_server = await utils.botUtils(self._client)._serverCheck(context, server, False)
+        if not amp_server:
+            return await context.send('Server not found.', ephemeral=True, delete_after=self._client.Message_Timeout)
+
+        guild = context.guild
+        db_server = self.DB.GetServer(InstanceID=amp_server.InstanceID)
+        category_name = db_server.getDisplayName() if db_server.getDisplayName() else f"{amp_server.InstanceName}"
+        category = discord.utils.get(guild.categories, name=category_name)
+        if not category:
+            return await context.send('No channels to clear.', ephemeral=True, delete_after=self._client.Message_Timeout)
+
+        channels = {
+            "console": console.value == 1,
+            "events": events.value == 1,
+            "chat": chat.value == 1
+        }
+        for key, should_delete in channels.items():
+            if not should_delete:
+                continue
+            channel_id = getattr(db_server, f"Discord_{key.capitalize()}_Channel")
+            channel = guild.get_channel(channel_id) if channel_id else None
+            if channel:
+                await channel.delete()
+                self.logger.info(f"Deleted channel: {channel.name}")
+                setattr(db_server, f"Discord_{key.capitalize()}_Channel", None)
+
+        # If category is empty after deletions, delete it as well
+        if len(category.channels) == 0:
+            await category.delete()
+            self.logger.info(f"Deleted category: {category_name}")
+
+        amp_server._setDBattr()
+
+        await context.send(f"Cleared channels for **{amp_server.InstanceName}**.", ephemeral=True, delete_after=self._client.Message_Timeout)
+
 async def setup(client):
     await client.add_cog(AMP_Server(client))
