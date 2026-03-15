@@ -372,6 +372,7 @@ class AMP_Server(commands.Cog):
         amp_server = await self.uBot._serverCheck(context, server, False)
         if amp_server:
             db_server = self.DB.GetServer(InstanceID=amp_server.InstanceID)
+            old_role_id = db_server.Discord_Role
             db_server.Discord_Role = role.id
             amp_server._setDBattr()  # This will update the AMPInstance Attributes
             await context.send(f'Set **{amp_server.InstanceName}** Discord Role to `{role.name}`', ephemeral=True, delete_after=self._client.Message_Timeout)
@@ -381,6 +382,11 @@ class AMP_Server(commands.Cog):
             if category != None:
                 try:
                     await category.set_permissions(role, read_messages=True, send_messages=True, connect=True, speak=True)
+                    # Remove permissions for the old role if it exists and is different from the new role.
+                    if old_role_id and old_role_id != role.id:
+                        old_role = context.guild.get_role(old_role_id)
+                        if old_role:
+                            await category.set_permissions(old_role, overwrite=None)
                 except Exception as e:
                     self.logger.error(f'Failed to update Discord Category permissions for {amp_server.InstanceName} to match Discord Role change. Error: {e}')
 
