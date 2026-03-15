@@ -631,6 +631,10 @@ class AMP_Server(commands.Cog):
                 role = guild.get_role(db_server.Discord_Role)
                 if role:
                     await category.set_permissions(role, view_channel=True, send_messages=True, read_message_history=True)
+                    # Also add bot role permissions to view the category and channels so it can send messages and updates to the channels.
+                    bot_role = guild.get_role(guild.me.top_role.id)
+                    if bot_role:
+                        await category.set_permissions(bot_role, view_channel=True, send_messages=True, read_message_history=True)
                     if private.value == 1:
                         await category.set_permissions(guild.default_role, view_channel=False)
                     self.logger.info(f"Set permissions for role: {role.name} on category: {category_name}")
