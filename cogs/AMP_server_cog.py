@@ -684,8 +684,7 @@ class AMP_Server(commands.Cog):
         for key, should_delete in channels.items():
             if not should_delete:
                 continue
-            channel_id = getattr(db_server, f"Discord_{key.capitalize()}_Channel")
-            channel = guild.get_channel(channel_id) if channel_id else None
+            channel = category.channels and discord.utils.get(category.channels, name=key)
             if channel:
                 await channel.delete()
                 self.logger.info(f"Deleted channel: {channel.name}")
