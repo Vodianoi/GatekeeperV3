@@ -321,6 +321,15 @@ class AMP_Server(commands.Cog):
             db_server = self.DB.GetServer(InstanceID=amp_server.InstanceID)
             if db_server.setDisplayName(name) != False:
                 amp_server._setDBattr()  # This will update the AMPInstance Attributes
+
+                # Check if instance has a Discord category and if so update the category name to match the new display name.
+                if discord.utils.get(context.guild.categories, id=db_server.getDisplayName) != None:
+                    category = discord.utils.get(context.guild.categories, id=db_server.getDisplayName)
+                    try:
+                        await category.edit(name=name)
+                    except Exception as e:
+                        self.logger.error(f'Failed to update Discord Category name for {amp_server.InstanceName} to match Display Name change. Error: {e}')
+
                 await context.send(f"Set **{amp_server.InstanceName}** Display Name to `{name}`", ephemeral=True, delete_after=self._client.Message_Timeout)
             else:
                 await context.send(f'The Display Name provided is not unique, this server or another server already has this name.', ephemeral=True, delete_after=self._client.Message_Timeout)
@@ -628,7 +637,6 @@ class AMP_Server(commands.Cog):
             f"- Events: <#{created_channels['events'].id}>",
             ephemeral=True, delete_after=self._client.Message_Timeout
         )
-
 
 
     @amp_server_channels_settings.command(name='remove')
