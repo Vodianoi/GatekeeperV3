@@ -598,9 +598,9 @@ class AMP_Server(commands.Cog):
     @amp_server_channels_settings.command(name='init')
     @app_commands.autocomplete(server=utils.autocomplete_servers)
     @app_commands.choices(console=[Choice(name="True", value=1), Choice(name="False", value=0)])
-    @app_commands.choices(events=[Choice(name="True", value=1), Choice(name="False", value=0)])
+    @app_commands.choices(event=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(chat=[Choice(name="True", value=1), Choice(name="False", value=0)])
-    async def server_channel_init(self, context: commands.Context, server, console: Choice[int], events: Choice[int], chat: Choice[int]):
+    async def server_channel_init(self, context: commands.Context, server, console: Choice[int], event: Choice[int], chat: Choice[int]):
         """Creates a category and channels for the AMP server (console, events, chat) and links them."""
         self.logger.command(f'{context.author.name} used Server Channel Init...')
         await context.defer(ephemeral=True)
@@ -627,7 +627,7 @@ class AMP_Server(commands.Cog):
         created_channels = {}
         channels = {
             "console": f"console" if console.value == 1 else None,
-            "events": f"events" if events.value == 1 else None,
+            "event": f"events" if event.value == 1 else None,
             "chat": f"chat" if chat.value == 1 else None
         }
         for key, name in channels.items():
@@ -650,7 +650,7 @@ class AMP_Server(commands.Cog):
             f"Initialized channels for **{amp_server.InstanceName}**:\n"
             f"- Console: <#{created_channels['console'].id}>\n"
             f"- Chat: <#{created_channels['chat'].id}>\n"
-            f"- Events: <#{created_channels['events'].id}>",
+            f"- Event: <#{created_channels['events'].id}>",
             ephemeral=True, delete_after=self._client.Message_Timeout
         )
 
@@ -658,9 +658,9 @@ class AMP_Server(commands.Cog):
     @amp_server_channels_settings.command(name='remove')
     @app_commands.autocomplete(server=utils.autocomplete_servers)
     @app_commands.choices(console=[Choice(name="True", value=1), Choice(name="False", value=0)])
-    @app_commands.choices(events=[Choice(name="True", value=1), Choice(name="False", value=0)])
+    @app_commands.choices(event=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(chat=[Choice(name="True", value=1), Choice(name="False", value=0)])
-    async def server_channel_clear(self, context: commands.Context, server, console: Choice[int], events: Choice[int], chat: Choice[int]):
+    async def server_channel_clear(self, context: commands.Context, server, console: Choice[int], event: Choice[int], chat: Choice[int]):
         """Unlinks and Deletes the category and channels for the AMP server (console, events, chat)"""
         self.logger.command(f'{context.author.name} used Server Channel Clear...')
         await context.defer(ephemeral=True)
@@ -678,7 +678,7 @@ class AMP_Server(commands.Cog):
 
         channels = {
             "console": console.value == 1,
-            "events": events.value == 1,
+            "event": event.value == 1,
             "chat": chat.value == 1
         }
         for key, should_delete in channels.items():
