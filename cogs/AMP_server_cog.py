@@ -571,6 +571,63 @@ class AMP_Server(commands.Cog):
 
         await context.send(embeds=embed_list, ephemeral=True, delete_after=self._client.Message_Timeout)
 
+    @server.group(name='init')
+    @utils.role_check()
+    async def amp_server_init_settings(self, context: commands.Context):
+        if context.invoked_subcommand is None:
+            await context.send('Invalid command passed...', ephemeral=True, delete_after=self._client.Message_Timeout)
+
+    @amp_server_init_settings.command(name='channels')
+    @app_commands.autocomplete(server=utils.autocomplete_servers)
+    @app_commands.choices(console=[Choice(name="True", value=1), Choice(name="False", value=0)])
+    @app_commands.choices(events=[Choice(name="True", value=1), Choice(name="False", value=0)])
+    @app_commands.choices(chat=[Choice(name="True", value=1), Choice(name="False", value=0)])
+    async def server_channel_init(self, context: commands.Context, server, console: Choice[int], events: Choice[int], chat: Choice[int]):
+        """Creates a category and channels for the AMP server (console, events, chat) and links them."""
+        self.logger.command(f'{context.author.name} used Server Channel Init...')
+        await context.defer(ephemeral=True)
+
+        amp_server = await utils.botUtils(self._client)._serverCheck(context, server, False)
+        if not amp_server:
+            return await context.send('Server not found.', ephemeral=True, delete_after=self._client.Message_Timeout)
+
+        guild = context.guild
+        db_server = self.DB.GetServer(InstanceID=amp_server.InstanceID)
+        category_name = db_server.getDisplayName() if db_server.getDisplayName() else f"{amp_server.InstanceName}"
+        category = discord.utils.get(guild.categories, name=category_name)
+        if not category:
+            category = await guild.create_category(category_name)
+            self.logger.info(f"Created category: {category_name}")
+
+        created_channels = {}
+        channels = {
+            "console": f"console" if console.value == 1 else None,
+            "events": f"events" if events.value == 1 else None,
+            "chat": f"chat" if chat.value == 1 else None
+        }
+        for key, name in channels.items():
+            if not name:
+                continue
+            channel = discord.utils.get(category.channels, name=name)
+            if not channel:
+                channel = await guild.create_text_channel(name, category=category)
+                self.logger.info(f"Created channel: {name}")
+            created_channels[key] = channel
+
+        # Link channels to AMP server in DB
+        await self.amp_server_event_channel_set(context, server, created_channels["events"])
+        await self.amp_server_console_channel(context, server, created_channels["console"])
+        await self.amp_server_chat_channel(context, server, created_channels["chat"])
+        amp_server._setDBattr()
+
+
+        await context.send(
+            f"Initialized channels for **{amp_server.InstanceName}**:\n"
+            f"- Console: <#{created_channels['console'].id}>\n"
+            f"- Chat: <#{created_channels['chat'].id}>\n"
+            f"- Events: <#{created_channels['events'].id}>",
+            ephemeral=True, delete_after=self._client.Message_Timeout
+        )
 
 async def setup(client):
     await client.add_cog(AMP_Server(client))

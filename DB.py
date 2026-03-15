@@ -25,6 +25,7 @@ from __future__ import annotations
 import datetime
 import json
 import logging
+import os
 import pathlib
 import sqlite3
 import time
@@ -48,10 +49,10 @@ DB_Version = 3.0
 
 
 class DBHandler:
-    def __init__(self):
+    def __init__(self, DB_Path="discordBot.db"):
         global DB_Version
         self.logger = logging.getLogger(__name__)
-        self.DB = Database(Handler=self)
+        self.DB = Database(Handler=self, DB_Path=DB_Path)
         self.DBConfig = self.DB.DBConfig
         self.SuccessfulDatabase = True
         self.Bot_Version = ""
@@ -93,15 +94,16 @@ class DBHandler:
 def getDBHandler() -> DBHandler:
     global Handler
     if Handler == None:
-        Handler = DBHandler()
+        db_path = os.getenv("DB_PATH")
+        Handler = DBHandler(DB_Path=db_path) if db_path else DBHandler()
     return Handler
 
 
 class Database:
-    def __init__(self, Handler=None):
+    def __init__(self, Handler=None, DB_Path="discordBot.db"):
         self.DBExists = False
 
-        db_file = pathlib.Path("discordBot.db")
+        db_file = pathlib.Path(DB_Path)
         if pathlib.Path.exists(db_file):
             self.DBExists = True
 
@@ -111,7 +113,7 @@ class Database:
             self.DBHandler = getDBHandler()
 
         self._db = sqlite3.connect(
-            "discordBot.db", detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES, check_same_thread=False
+            DB_Path, detect_types=sqlite3.PARSE_DECLTYPES | sqlite3.PARSE_COLNAMES, check_same_thread=False
         )
         self._db.row_factory = sqlite3.Row
         if not self.DBExists:
@@ -1149,6 +1151,13 @@ class DBServer:
             return False
         jdata = dump_to_json({"Type": "UpdateServerDisplayName", "ServerID": self.ID, "DisplayName": DisplayName})
         self._db._logdata(jdata)
+
+    def getDisplayName(self):
+        (row, cur) = self._db._fetchone("Select DisplayName from Servers where ID=?", (self.ID,))
+        if not row:
+            return None
+        cur.close()
+        return row["DisplayName"]
 
     def getBanner(self, background_path: str = None):
         return DBBanner(self._db, self.ID, background_path)
