@@ -635,6 +635,13 @@ class AMP_Server(commands.Cog):
                     bot_role = guild.get_role(guild.me.top_role.id)
                     if bot_role:
                         await category.set_permissions(bot_role, view_channel=True, send_messages=True, read_message_history=True)
+                    # Also add moderator role permissions to view the category and channels so they can send messages and updates to the channels.
+                    moderator_role_id = DB.getDBHandler().DBConfig.GetSetting('Moderator_role_id')
+                    moderator_role = guild.get_role(moderator_role_id) if moderator_role_id else None
+                    if moderator_role:
+                        await category.set_permissions(moderator_role, view_channel=True, send_messages=True, read_message_history=True)
+
+                    # If private is true, remove view channel permissions for everyone except the linked role, moderators, and the bot.
                     if private.value == 1:
                         await category.set_permissions(guild.default_role, view_channel=False)
                     self.logger.info(f"Set permissions for role: {role.name} on category: {category_name}")
