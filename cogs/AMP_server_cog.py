@@ -608,6 +608,13 @@ class AMP_Server(commands.Cog):
             category = await guild.create_category(category_name)
             self.logger.info(f"Created category: {category_name}")
 
+            # If db_server has role linked, set channel permissions for that role
+            if db_server.Discord_Role:
+                role = guild.get_role(db_server.Discord_Role)
+                if role:
+                    await category.set_permissions(role, view_channel=True, send_messages=True, read_message_history=True)
+                    self.logger.info(f"Set permissions for role: {role.name} on category: {category_name}")
+
         created_channels = {}
         channels = {
             "console": f"console" if console.value == 1 else None,
