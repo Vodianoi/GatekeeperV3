@@ -579,8 +579,10 @@ class AMP_Server(commands.Cog):
 
     @amp_server_init_settings.command(name='channels')
     @app_commands.autocomplete(server=utils.autocomplete_servers)
-    @app_commands.choices(channels=[Choice(name="Console", value="console"), Choice(name="Chat", value="chat"), Choice(name="Events", value="events")])
-    async def server_channel_init(self, context: commands.Context, server, channels):
+    @app_commands.choices(console=[Choice(name="True", value=1), Choice(name="False", value=0)])
+    @app_commands.choices(events=[Choice(name="True", value=1), Choice(name="False", value=0)])
+    @app_commands.choices(chat=[Choice(name="True", value=1), Choice(name="False", value=0)])
+    async def server_channel_init(self, context: commands.Context, server, console: int, events: int, chat: int):
         """Creates a category and channels for the AMP server (console, events, chat) and links them."""
         self.logger.command(f'{context.author.name} used Server Channel Init...')
         await context.defer(ephemeral=True)
@@ -598,7 +600,14 @@ class AMP_Server(commands.Cog):
             self.logger.info(f"Created category: {category_name}")
 
         created_channels = {}
+        channels = {
+            "console": f"console" if console.value == 1 else None,
+            "events": f"events" if events.value == 1 else None,
+            "chat": f"chat" if chat.value == 1 else None
+        }
         for key, name in channels.items():
+            if not name:
+                continue
             channel = discord.utils.get(category.channels, name=name)
             if not channel:
                 channel = await guild.create_text_channel(name, category=category)
