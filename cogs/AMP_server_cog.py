@@ -610,7 +610,7 @@ class AMP_Server(commands.Cog):
     @app_commands.choices(chat=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(voice=[Choice(name="True", value=1), Choice(name="False", value=0)])
     @app_commands.choices(private=[Choice(name="True", value=1), Choice(name="False", value=0)])
-    async def server_channel_init(self, context: commands.Context, server, console: Choice[int], event: Choice[int], chat: Choice[int], private: Choice[int], voice: Choice[int]):
+    async def server_channel_init(self, context: commands.Context, server, console: Choice[int], event: Choice[int], chat: Choice[int], voice: Choice[int], private: Choice[int]):
         """Creates a category and channels for the AMP server (console, event, chat) and links them."""
         self.logger.command(f'{context.author.name} used Server Channel Init...')
         await context.defer(ephemeral=True)
@@ -665,10 +665,13 @@ class AMP_Server(commands.Cog):
             created_channels[key] = channel
 
         # Link channels to AMP server in DB
-        await self.amp_server_event_channel_set(context, server, created_channels["event"])
-        await self.amp_server_console_channel(context, server, created_channels["console"])
-        await self.amp_server_chat_channel(context, server, created_channels["chat"])
-        if created_channels.get("voice"):
+        if "event" in created_channels:
+            await self.amp_server_event_channel_set(context, server, created_channels["event"])
+        if "console" in created_channels:
+            await self.amp_server_console_channel(context, server, created_channels["console"])
+        if "chat" in created_channels:
+            await self.amp_server_chat_channel(context, server, created_channels["chat"])
+        if "voice" in created_channels:
             voice_channel = created_channels["voice"]
             # If a text channel was created for "voice", replace it with a real voice channel
             if isinstance(voice_channel, discord.TextChannel):
@@ -679,7 +682,6 @@ class AMP_Server(commands.Cog):
             voice_channel = await guild.create_voice_channel("voice", category=category)
             created_channels["voice"] = voice_channel
 
-            self.DB.GetServer(InstanceID=amp_server.InstanceID).Discord_Voice_Channel = voice_channel.id
         amp_server._setDBattr()
 
 
